@@ -20,7 +20,10 @@
       "infoPlist": {
         "NSMicrophoneUsageDescription": "VNeID can truy cap micro de ghi am giong noi cua ban",
         "NSSpeechRecognitionUsageDescription": "VNeID can nhan dang giong noi de ho tro dien form tu dong",
-        "UIBackgroundModes": ["audio", "voip"]
+        "UIBackgroundModes": [
+          "audio",
+          "voip"
+        ]
       }
     },
     "android": {
@@ -48,19 +51,12 @@
         {
           "microphonePermission": "VNeID can truy cap micro de ghi am giong noi cua ban."
         }
-      ],
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "minSdkVersion": 24,
-            "extraMavenRepos": ["https://jitpack.io"]
-          },
-          "ios": {
-            "deploymentTarget": "15.1"
-          }
-        }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c141c377-c554-4432-9a1d-1c25038f7ba0"
+      }
+    }
   }
 }

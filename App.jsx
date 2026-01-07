@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet, Vibration } from 'react-native';
+import { View, StatusBar, StyleSheet, Vibration } from 'react-native';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { Audio } from 'expo-av';
 
 // Constants
@@ -517,8 +518,9 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
 
       {/* Screens */}
       {currentScreen === 'home' && (
@@ -554,9 +556,10 @@ export default function App() {
         currentScreen={currentScreen}
       />
 
-      {/* Bottom Navigation */}
-      <BottomNav current={currentScreen} onNavigate={handleNavigate} />
-    </SafeAreaView>
+        {/* Bottom Navigation */}
+        <BottomNav current={currentScreen} onNavigate={handleNavigate} />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

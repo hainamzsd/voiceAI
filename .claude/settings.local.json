@@ -6,7 +6,9 @@
       "Bash(npm install:*)",
       "Bash(npx kill-port:*)",
       "Bash(taskkill:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(Remove-Item -Recurse -Force node_modules)",
+      "Bash(Remove-Item package-lock.json -ErrorAction SilentlyContinue)"
     ]
   }
 }
