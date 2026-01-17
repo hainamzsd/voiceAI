@@ -1,23 +1,16 @@
 // LiveKit Voice Service for VNeID
-// Real-time voice streaming with automatic turn detection
+// Note: registerGlobals() is called in App.jsx before this import
 
 import {
   Room,
   RoomEvent,
   Track,
-  AudioPresets,
   ConnectionState,
-  DataPacket_Kind,
 } from '@livekit/react-native';
-import { registerGlobals } from '@livekit/react-native-webrtc';
-
-// Register WebRTC globals for React Native
-registerGlobals();
 
 // Service state
 let room = null;
 let isConnected = false;
-let localAudioTrack = null;
 
 // Callbacks
 let callbacks = {
@@ -32,32 +25,19 @@ let callbacks = {
 };
 
 /**
- * Initialize and connect to LiveKit room
- * @param {string} url - LiveKit server URL
- * @param {string} token - Access token
+ * Connect to LiveKit room
  */
 export const connect = async (url, token) => {
   try {
     console.log('LiveKit: Connecting to', url);
 
-    // Create room instance
-    room = new Room({
-      adaptiveStream: true,
-      dynacast: true,
-      audioCaptureDefaults: {
-        autoGainControl: true,
-        echoCancellation: true,
-        noiseSuppression: true,
-      },
-      audioOutput: {
-        deviceId: 'default',
-      },
-    });
+    // Create room
+    room = new Room();
 
-    // Set up event listeners
+    // Set up event listeners before connecting
     setupEventListeners();
 
-    // Connect to room
+    // Connect
     await room.connect(url, token, {
       autoSubscribe: true,
     });
@@ -85,10 +65,9 @@ export const connect = async (url, token) => {
 const setupEventListeners = () => {
   if (!room) return;
 
-  // Connection state changes
+  // Connection state
   room.on(RoomEvent.ConnectionStateChanged, (state) => {
-    console.log('LiveKit: Connection state:', state);
-
+    console.log('LiveKit: State:', state);
     if (state === ConnectionState.Disconnected) {
       isConnected = false;
       if (callbacks.onDisconnected) {
@@ -97,127 +76,99 @@ const setupEventListeners = () => {
     }
   });
 
-  // Track subscribed (agent audio)
+  // Track subscribed
   room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
-    console.log('LiveKit: Track subscribed:', track.kind, 'from', participant.identity);
-
-    if (track.kind === Track.Kind.Audio && participant.identity.includes('agent')) {
-      // Agent audio track - this is the AI speaking
+    console.log('LiveKit: Track subscribed:', track.kind);
+    if (track.kind === Track.Kind.Audio) {
       track.attach();
-      console.log('LiveKit: Agent audio attached');
     }
   });
 
   // Track unsubscribed
-  room.on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
-    console.log('LiveKit: Track unsubscribed');
+  room.on(RoomEvent.TrackUnsubscribed, (track) => {
     if (track.kind === Track.Kind.Audio) {
       track.detach();
     }
   });
 
-  // Data received from agent
-  room.on(RoomEvent.DataReceived, (payload, participant, kind) => {
+  // Data received
+  room.on(RoomEvent.DataReceived, (payload, participant) => {
     try {
       const message = JSON.parse(new TextDecoder().decode(payload));
-      console.log('LiveKit: Data received:', message);
+      console.log('LiveKit: Data:', message);
 
-      // Handle different message types
-      if (message.action) {
+      if (message.action || message.type === 'action') {
+        const actionData = {
+          action: message.action || message.type,
+          screen: message.screen || message.navigate_to,
+          data: message.data || {},
+        };
         if (callbacks.onAction) {
-          callbacks.onAction(message);
+          callbacks.onAction(actionData);
         }
       }
 
-      if (message.transcript) {
-        if (callbacks.onTranscript) {
-          callbacks.onTranscript(message.transcript);
-        }
+      if (message.transcript && callbacks.onTranscript) {
+        callbacks.onTranscript(message.transcript);
       }
 
-      if (message.text) {
-        if (callbacks.onAgentMessage) {
-          callbacks.onAgentMessage(message.text);
-        }
+      if ((message.text || message.message) && callbacks.onAgentMessage) {
+        callbacks.onAgentMessage(message.text || message.message);
       }
     } catch (e) {
-      console.log('LiveKit: Failed to parse data:', e);
+      console.log('LiveKit: Parse error:', e);
     }
   });
 
-  // Participant speaking state
+  // Speaking state
   room.on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
-    const agentSpeaking = speakers.some(s => s.identity.includes('agent'));
-
-    if (agentSpeaking) {
-      if (callbacks.onAgentSpeaking) {
-        callbacks.onAgentSpeaking();
-      }
-    } else {
-      if (callbacks.onAgentStoppedSpeaking) {
-        callbacks.onAgentStoppedSpeaking();
-      }
+    const agentSpeaking = speakers.some(s => s.identity?.includes('agent'));
+    if (agentSpeaking && callbacks.onAgentSpeaking) {
+      callbacks.onAgentSpeaking();
+    } else if (!agentSpeaking && callbacks.onAgentStoppedSpeaking) {
+      callbacks.onAgentStoppedSpeaking();
     }
   });
 
-  // Transcription received
-  room.on(RoomEvent.TranscriptionReceived, (segments, participant) => {
+  // Transcription
+  room.on(RoomEvent.TranscriptionReceived, (segments) => {
     const text = segments.map(s => s.text).join(' ');
-    console.log('LiveKit: Transcription:', text);
-
     if (callbacks.onTranscript) {
       callbacks.onTranscript(text);
     }
   });
-
-  // Error handling
-  room.on(RoomEvent.Disconnected, (reason) => {
-    console.log('LiveKit: Disconnected:', reason);
-    isConnected = false;
-  });
 };
 
 /**
- * Start publishing local audio (microphone)
+ * Start microphone
  */
 export const startMicrophone = async () => {
-  if (!room || !isConnected) {
-    console.error('LiveKit: Not connected');
-    return false;
-  }
+  if (!room || !isConnected) return false;
 
   try {
-    // Enable microphone
     await room.localParticipant.setMicrophoneEnabled(true);
-    console.log('LiveKit: Microphone enabled');
+    console.log('LiveKit: Mic enabled');
     return true;
   } catch (error) {
-    console.error('LiveKit: Microphone error', error);
-    if (callbacks.onError) {
-      callbacks.onError('Không thể bật microphone');
-    }
+    console.error('LiveKit: Mic error', error);
     return false;
   }
 };
 
 /**
- * Stop publishing local audio
+ * Stop microphone
  */
 export const stopMicrophone = async () => {
   if (!room) return;
-
   try {
     await room.localParticipant.setMicrophoneEnabled(false);
-    console.log('LiveKit: Microphone disabled');
   } catch (error) {
-    console.error('LiveKit: Stop microphone error', error);
+    console.error('LiveKit: Stop mic error', error);
   }
 };
 
 /**
- * Send context update to agent
- * @param {object} userContext - User information
- * @param {object} screenContext - Current screen context
+ * Send context to agent
  */
 export const sendContextUpdate = async (userContext, screenContext) => {
   if (!room || !isConnected) return;
@@ -233,23 +184,21 @@ export const sendContextUpdate = async (userContext, screenContext) => {
       new TextEncoder().encode(data),
       { reliable: true }
     );
-
     console.log('LiveKit: Context sent');
   } catch (error) {
-    console.error('LiveKit: Send context error', error);
+    console.error('LiveKit: Send error', error);
   }
 };
 
 /**
- * Set callback functions
- * @param {object} cbs - Callback functions
+ * Set callbacks
  */
 export const setCallbacks = (cbs) => {
   callbacks = { ...callbacks, ...cbs };
 };
 
 /**
- * Disconnect from room
+ * Disconnect
  */
 export const disconnect = async () => {
   if (room) {
@@ -257,18 +206,9 @@ export const disconnect = async () => {
     room = null;
   }
   isConnected = false;
-  localAudioTrack = null;
-  console.log('LiveKit: Disconnected');
 };
 
-/**
- * Check if connected
- */
 export const isRoomConnected = () => isConnected;
-
-/**
- * Get room instance
- */
 export const getRoom = () => room;
 
 export default {

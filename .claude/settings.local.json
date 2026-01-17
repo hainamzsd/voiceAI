@@ -8,7 +8,27 @@
       "Bash(taskkill:*)",
       "Bash(node:*)",
       "Bash(Remove-Item -Recurse -Force node_modules)",
-      "Bash(Remove-Item package-lock.json -ErrorAction SilentlyContinue)"
+      "Bash(Remove-Item package-lock.json -ErrorAction SilentlyContinue)",
+      "Bash(where:*)",
+      "Bash(dir:*)",
+      "Bash(if exist:*)",
+      "Bash(python livekit_agent.py:*)",
+      "Bash(ipconfig:*)",
+      "Bash(npx expo prebuild:*)",
+      "Bash(npx expo run:android)",
+      "WebSearch",
+      "Bash(python:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri ''http://localhost:3001/token?room=vneid-voice&identity=test-user'' | ConvertTo-Json\")",
+      "Bash(powershell -Command \"Start-Sleep -Seconds 5; Get-Content 'C:\\\\Users\\\\Trang\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--laptrinh-AI-VNeID-Voice-demo-vneid-voice-demo\\\\tasks\\\\bcb958a.output'\":*)",
+      "Bash(pip show:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(pip install:*)",
+      "Bash(cmd /c \"echo %LOCALAPPDATA%\")",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

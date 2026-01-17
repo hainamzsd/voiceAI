@@ -1,0 +1,50 @@
+# VNeID Voice AI Agent - Python Dependencies
+# Install: pip install -r requirements.txt
+
+# ==========================================
+# Core Dependencies
+# ==========================================
+
+# LiveKit
+livekit>=0.11.0
+livekit-agents>=0.8.0
+livekit-plugins-silero>=0.6.0
+
+# AI - Claude API
+anthropic>=0.18.0
+
+# Utilities
+python-dotenv>=1.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+
+# ==========================================
+# Local TTS - VieNeu-TTS (Vietnamese)
+# ==========================================
+vieneu>=0.1.0
+
+# ==========================================
+# Local STT - Whisper
+# ==========================================
+
+# Option 1: faster-whisper (Recommended - faster inference)
+faster-whisper>=1.0.0
+
+# Option 2: transformers (Alternative - easier setup)
+transformers>=4.36.0
+torch>=2.0.0
+
+# ==========================================
+# Backend Server
+# ==========================================
+flask>=2.0.0
+flask-cors>=4.0.0
+
+# ==========================================
+# Optional GPU Support
+# ==========================================
+# For NVIDIA GPU acceleration, install PyTorch with CUDA:
+# pip install torch --index-url https://download.pytorch.org/whl/cu118
+#
+# Or for ROCm (AMD GPU):
+# pip install torch --index-url https://download.pytorch.org/whl/rocm5.6

@@ -4,8 +4,8 @@
 // Copy code nay vao App.jsx de ket noi voi backend that
 // ============================================================
 
-// BUOC 1: Thay URL nay bang URL tu Kaggle ngrok
-const BACKEND_URL = 'https://b6525d14c3bf.ngrok-free.app';
+// BUOC 1: Backend URL (Kaggle/Colab ngrok)
+const BACKEND_URL = 'https://4f78f692959f.ngrok-free.app';
 
 // BUOC 2: Process voice with user and screen context
 const processVoiceWithBackend = async (audioUri, userContext = null, screenContext = null) => {

@@ -24,3 +24,6 @@ Thumbs.db
 *.apk
 *.aab
 *.ipa
+
+# Auto Claude data directory
+.auto-claude/
